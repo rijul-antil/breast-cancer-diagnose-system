@@ -11,7 +11,10 @@ import tensorflow as tf
 # Load the Scaler and TensorFlow Model
 # ==========================================================
 try:
-    scaler = joblib.load('breast_cancer_scaler.pkl')
+    # --- CODE BLOCK: UPDATED FILENAME TO MATCH GITHUB REPO ---
+    # Changed from 'breast_cancer_scaler.pkl' to 'breast_cancer_model.pkl'
+    scaler = joblib.load('breast_cancer_model.pkl')
+    # ---------------------------------------------------------
     deployed_nn = tf.keras.models.load_model('breast_cancer_model.h5')
     print("Scaler and Deep Learning Model loaded successfully!")
 except Exception as e:
@@ -22,13 +25,12 @@ except Exception as e:
 # ==========================================================
 # Prediction Function with Bulletproof Error Handling
 # ==========================================================
-# --- CODE BLOCK: UPDATED TO ONLY REQUIRE 10 INPUTS ---
 def predict_cancer(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10):
     
-    # 1. Capture the 10 user-provided Mean features
+    # 1. Capture the 10 user-provided Mean features from Sliders
     user_mean_features = [f1, f2, f3, f4, f5, f6, f7, f8, f9, f10]
 
-    # 2. Hardcode the 10 Error features using your provided mode values
+    # 2. Hardcoded Error features
     preassumed_error_features = [
         0.2204,    # radius error mode
         0.8561,    # texture error mode
@@ -42,13 +44,22 @@ def predict_cancer(f1, f2, f3, f4, f5, f6, f7, f8, f9, f10):
         0.001784   # fractal dimension error mode
     ]
 
-    # 3. Hardcode the 10 Worst features (Using 0.0 as fallbacks since they weren't provided. 
-    # For higher accuracy, you can replace these 0.0s with the actual modes from df_temp later)
-    preassumed_worst_features = [0.0] * 10
+    # 3. Hardcoded Worst features using the actual dataset modes you provided
+    preassumed_worst_features = [
+        12.36,    # worst radius mode
+        17.70,    # worst texture mode 
+        101.7,    # worst perimeter mode 
+        284.4,    # worst area mode 
+        0.1216,   # worst smoothness mode
+        0.1486,   # worst compactness mode
+        0.0,      # worst concavity mode
+        0.0,      # worst concave points mode
+        0.2226,   # worst symmetry mode
+        0.07427   # worst fractal dimension mode
+    ]
 
     # 4. Combine all arrays to perfectly match the 30 features the neural network expects
     full_30_features = user_mean_features + preassumed_error_features + preassumed_worst_features
-# -----------------------------------------------------
 
     # Model execution
     if deployed_nn is None or scaler is None:
@@ -93,7 +104,6 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="teal", neutral_hue="slate")) as
     gr.Markdown("<p style='text-align: center;'>Adjust the basic medical metrics below. Advanced metrics are automatically calculated.</p>")
     gr.Markdown("---")
 
-    # --- CODE BLOCK: REPLACED TEXT INPUTS WITH 10 SLIDERS ---
     with gr.Row():
         with gr.Column():
             f1 = gr.Slider(minimum=0, maximum=40, step=0.1, value=14.0, label="Mean Radius")
@@ -108,7 +118,6 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="teal", neutral_hue="slate")) as
             f8 = gr.Slider(minimum=0.0, maximum=0.25, step=0.001, value=0.04, label="Mean Concave Points")
             f9 = gr.Slider(minimum=0.0, maximum=0.5, step=0.001, value=0.18, label="Mean Symmetry")
             f10 = gr.Slider(minimum=0.0, maximum=0.15, step=0.001, value=0.06, label="Mean Fractal Dimension")
-    # --------------------------------------------------------
 
     # Output Section
     gr.Markdown("---")
